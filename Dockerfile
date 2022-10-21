@@ -15,7 +15,12 @@ RUN apk --no-cache --no-progress upgrade && \
     sed -i 's|^;* *\(preserve case = \).*|   \1yes|' $file && \
     sed -i 's|^;* *\(short preserve case = \).*|   \1yes|' $file && \
     sed -i 's|^;* *\(default case = \).*|   \1lower|' $file && \
-    sed -i '/Share Definitions/,$d' $file && \
+    sed -i '/Share Definitions/,$d' $file && \ 
+    apk update && \
+    apk upgrade && \
+    sed -i 's/v3\.12/latest-stable/g' /etc/apk/repositories && \
+    apk update && \
+    apk upgrade && \
     echo '   pam password change = yes' >>$file && \
     echo '   map to guest = bad user' >>$file && \
     echo '   usershare allow guests = yes' >>$file && \
@@ -57,10 +62,12 @@ RUN apk --no-cache --no-progress upgrade && \
 
 COPY samba.sh /usr/bin/
 
+RUN  sed -i 's/FS/F --debug-stdout/' /usr/bin/samba.sh
+
 EXPOSE 137/udp 138/udp 139 445
 
-HEALTHCHECK --interval=60s --timeout=15s \
-            CMD smbclient -L \\localhost -U % -m SMB3
+#HEALTHCHECK --interval=60s --timeout=15s \
+#            CMD smbclient -L \\localhost -U % -m SMB3
 
 VOLUME ["/etc", "/var/cache/samba", "/var/lib/samba", "/var/log/samba",\
             "/run/samba"]
